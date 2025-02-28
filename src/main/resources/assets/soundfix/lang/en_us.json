@@ -1,0 +1,7 @@
+{
+  "options.audioDevice.default": "System Default",
+  "options.audioDevice": "Device: %s",
+  "options.directionalAudio": "Directional Audio: %s",
+  "options.directionalAudio.off.tooltip": "Classic Stereo sound.",
+  "options.directionalAudio.on.tooltip": "Uses HRTF-based directional audio to improve the simulation of 3D sound. Requires HRTF compatible audio hardware, and is best experienced with headphones."
+}
