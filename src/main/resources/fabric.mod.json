@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "soundfix",
+  "version": "${version}",
+  "name": "SoundFix",
+  "description": "Backports the entire new Sound System",
+  "authors": [
+    "moehreag"
+  ],
+  "contact": {
+    "homepage": "",
+    "sources": ""
+  },
+  "license": "LGPL-3.0",
+  "icon": "assets/soundfix/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "io.github.moehreag.soundfix.SoundFix"
+    ]
+  },
+  "mixins": [
+    "soundfix.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.21",
+    "minecraft": "1.8.9",
+    "osl-entrypoints": ">=0.4.0",
+    "legacy-lwjgl3": "*"
+  }
+}
