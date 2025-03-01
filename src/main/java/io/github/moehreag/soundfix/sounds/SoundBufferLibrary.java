@@ -1,19 +1,19 @@
 package io.github.moehreag.soundfix.sounds;
 
-import com.google.common.collect.Maps;
-import io.github.moehreag.soundfix.SoundFix;
-import io.github.moehreag.soundfix.b3d_audio.SoundBuffer;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+
+import com.google.common.collect.Maps;
+import io.github.moehreag.soundfix.SoundFix;
+import io.github.moehreag.soundfix.b3d_audio.SoundBuffer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.resource.ResourceManager;
 import net.minecraft.client.sound.Sound;
+import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 
 /**
@@ -38,55 +38,21 @@ public class SoundBufferLibrary {
 	 */
 	public CompletableFuture<SoundBuffer> getCompleteBuffer(Identifier soundID) {
 		return this.cache.computeIfAbsent(soundID, resourceLocation -> CompletableFuture.supplyAsync(() -> {
-				try {
-					InputStream inputStream = this.resourceManager.getResource(resourceLocation).getInputStream();
-
-					SoundBuffer var5;
-					try {
-						FiniteAudioStream finiteAudioStream = new JOrbisAudioStream(inputStream);
-
-						try {
-							ByteBuffer byteBuffer = finiteAudioStream.readAll();
-							var5 = new SoundBuffer(byteBuffer, finiteAudioStream.getFormat());
-						} catch (Throwable var8) {
-							try {
-								finiteAudioStream.close();
-							} catch (Throwable var7) {
-								var8.addSuppressed(var7);
-							}
-
-							throw var8;
-						}
-
-						finiteAudioStream.close();
-					} catch (Throwable var9) {
-						if (inputStream != null) {
-							try {
-								inputStream.close();
-							} catch (Throwable var6) {
-								var9.addSuppressed(var6);
-							}
-						}
-
-						throw var9;
-					}
-
-					if (inputStream != null) {
-						inputStream.close();
-					}
-
-					return var5;
-				} catch (IOException var10) {
-					throw new CompletionException(var10);
+			try (InputStream inputStream = this.resourceManager.getResource(resourceLocation).getInputStream()) {
+				try (FiniteAudioStream finiteAudioStream = new JOrbisAudioStream(inputStream)) {
+					return new SoundBuffer(finiteAudioStream.readAll(), finiteAudioStream.getFormat());
 				}
-			}, SoundFix.SOUND));
+			} catch (IOException var10) {
+				throw new CompletionException(var10);
+			}
+		}, SoundFix.SOUND));
 	}
 
 	/**
 	 * {@return Returns a {@linkplain CompletableFuture} containing the {@linkplain AudioStream}. The {@linkplain AudioStream} is loaded asynchronously.}
 	 *
 	 * @param resourceLocation the {@linkplain Identifier} of the sound
-	 * @param isWrapper whether the {@linkplain AudioStream} should be a {@linkplain LoopingAudioStream}
+	 * @param isWrapper        whether the {@linkplain AudioStream} should be a {@linkplain LoopingAudioStream}
 	 */
 	public CompletableFuture<AudioStream> getStream(Identifier resourceLocation, boolean isWrapper) {
 		return CompletableFuture.supplyAsync(() -> {
@@ -110,9 +76,9 @@ public class SoundBufferLibrary {
 	/**
 	 * Preloads the {@linkplain SoundBuffer} objects for the specified collection of sounds.
 	 * <p>
-	 * @return a {@linkplain CompletableFuture} representing the completion of the preload operation
 	 *
 	 * @param sounds the collection of sounds to preload
+	 * @return a {@linkplain CompletableFuture} representing the completion of the preload operation
 	 */
 	public CompletableFuture<?> preload(Collection<Sound> sounds) {
 		return CompletableFuture.allOf(sounds.stream().map(sound -> this.getCompleteBuffer(sound.getLocation())).toArray(CompletableFuture[]::new));

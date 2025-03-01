@@ -490,7 +490,7 @@ public class SoundEngine {
 							}
 						} else {
 							float f = sound.getVolume();
-							float g = f > 1 ? 16 * f : 16.0F;
+							float g = Math.max(f, 1f) * sound2.getAttenuation();
 							//(float) sound2.getAttenuationDistance();
 							SoundCategory soundSource = sound.getCategory();
 							float h = this.calculateVolume(f, soundSource);
@@ -503,9 +503,10 @@ public class SoundEngine {
 								Vec3d vec3 = new Vec3d(sound.getX(), sound.getY(), sound.getZ());
 								if (!this.listeners.isEmpty()) {
 									float j = !bl && attenuation != SoundInstance.AttenuationType.NONE ? g : Float.POSITIVE_INFINITY;
-
-									for (SoundEventListener soundEventListener : this.listeners) {
-										soundEventListener.onPlaySound(sound, weighedSoundEvents, j);
+									if (j == Float.POSITIVE_INFINITY || listener.getTransform().position().squaredDistanceTo(vec3) < g*g) {
+										for (SoundEventListener soundEventListener : this.listeners) {
+											soundEventListener.onPlaySound(sound, weighedSoundEvents, j);
+										}
 									}
 								}
 

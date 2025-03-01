@@ -63,7 +63,7 @@ public class ChannelAccess {
 			Iterator<ChannelAccess.ChannelHandle> iterator = this.channels.iterator();
 
 			while (iterator.hasNext()) {
-				ChannelAccess.ChannelHandle channelHandle = (ChannelAccess.ChannelHandle)iterator.next();
+				ChannelAccess.ChannelHandle channelHandle = iterator.next();
 				channelHandle.channel.updateStream();
 				if (channelHandle.channel.stopped()) {
 					channelHandle.release();

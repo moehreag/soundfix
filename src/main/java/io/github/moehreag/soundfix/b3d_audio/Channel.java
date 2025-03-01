@@ -78,7 +78,7 @@ public class Channel {
 	 * {@return the state of the audio channel}
 	 */
 	private int getState() {
-		return !this.initialized.get() ? 4116 : AL10.alGetSourcei(this.source, AL10.AL_SOURCE_STATE);
+		return !this.initialized.get() ? AL10.AL_STOPPED : AL10.alGetSourcei(this.source, AL10.AL_SOURCE_STATE);
 	}
 
 	/**
