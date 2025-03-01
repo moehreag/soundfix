@@ -504,7 +504,7 @@ public class SoundEngine {
 							LOGGER.debug(MARKER, "Skipped playing sound {}, volume was zero.", new Object[]{sound2.getLocation()});
 						} else {
 							Vec3d vec3 = new Vec3d(sound.getX(), sound.getY(), sound.getZ());
-							if (listener.getTransform().position().squaredDistanceTo(vec3) >= g*g) { // cut out inaudible sounds (because they're too far away)
+							if (!bl && listener.getTransform().position().squaredDistanceTo(vec3) >= g*g) { // cut out inaudible sounds (because they're too far away)
 								return;
 							}
 							if (!this.listeners.isEmpty()) {
