@@ -494,22 +494,25 @@ public class SoundEngine {
 						}
 					} else {
 						float f = sound.getVolume();
-						float g = f > 1 ? 16 * f : 16.0F;
-						//(float) sound2.getAttenuationDistance();
+						float g = Math.max(f, 1.0F) * 16;
 						SoundCategory soundSource = weighedSoundEvents.getCategory();
 						float h = this.calculateVolume(f, soundSource);
 						float i = this.calculatePitch(sound);
 						SoundInstance.Attenuation attenuation = sound.getAttenuationType();
-						boolean bl = soundSource == SoundCategory.AMBIENT || soundSource == SoundCategory.MASTER || soundSource == SoundCategory.MUSIC;//sound.isRelative();
+						boolean bl = soundSource == SoundCategory.MASTER || soundSource == SoundCategory.MUSIC;//sound.isRelative();
 						if (h == 0.0F /*&& !sound.canStartSilent()*/) {
 							LOGGER.debug(MARKER, "Skipped playing sound {}, volume was zero.", new Object[]{sound2.getLocation()});
 						} else {
 							Vec3d vec3 = new Vec3d(sound.getX(), sound.getY(), sound.getZ());
+							if (listener.getTransform().position().squaredDistanceTo(vec3) >= g*g) { // cut out inaudible sounds (because they're too far away)
+								return;
+							}
 							if (!this.listeners.isEmpty()) {
 								float j = !bl && attenuation != SoundInstance.Attenuation.NONE ? g : Float.POSITIVE_INFINITY;
-
-								for (SoundEventListener soundEventListener : this.listeners) {
-									soundEventListener.onPlaySound(sound, weighedSoundEvents, j);
+								if (j == Float.POSITIVE_INFINITY || listener.getTransform().position().squaredDistanceTo(vec3) < g*g) {
+									for (SoundEventListener soundEventListener : this.listeners) {
+										soundEventListener.onPlaySound(sound, weighedSoundEvents, j);
+									}
 								}
 							}
 
@@ -610,7 +613,7 @@ public class SoundEngine {
 	 * Clamps the sound between 0.0f and 1.0f.
 	 */
 	private float calculateVolume(float volumeMultiplier, SoundCategory source) {
-		return MathHelper.clamp(volumeMultiplier, 0.0F, 1.0F) * this.getVolume(source);
+		return MathHelper.clamp(volumeMultiplier * this.getVolume(source), 0.0F, 1.0F);
 	}
 
 	/**
