@@ -2,6 +2,7 @@ plugins {
 	id("maven-publish")
 	id("fabric-loom") version "1.10-SNAPSHOT"
 	id("ploceus") version "1.10-SNAPSHOT"
+    id("com.modrinth.minotaur") version "2.+"
 }
 
 base {
@@ -104,4 +105,19 @@ publishing {
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
 	}
+}
+
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN")
+    projectId = "h2NAXCR5"
+    versionNumber = "${project.version}"
+    versionType = "release"
+    uploadFile = tasks.remapJar.get()
+    gameVersions.set(listOf("${project.property("minecraft_version")}"))
+    loaders.set(listOf("fabric", "quilt"))
+    additionalFiles.set(listOf(tasks.remapSourcesJar))
+    dependencies {
+        required.project("osl")
+        required.project("moehreag-legacy-lwjgl3")
+    }
 }
