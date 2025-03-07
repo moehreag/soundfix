@@ -1,6 +1,8 @@
 package io.github.moehreag.soundfix.mixin;
 
+import com.google.gson.Gson;
 import io.github.moehreag.soundfix.Engine;
+import io.github.moehreag.soundfix.subtitles.SubtitlesHud;
 import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.resource.manager.ResourceManager;
 import net.minecraft.client.sound.system.SoundEngine;
@@ -21,11 +23,20 @@ public class SoundManagerMixin {
 	@Mutable
 	private SoundEngine engine;
 
+	@Shadow
+	@Final
+	private static Gson GSON;
+
 	@Inject(method = "<init>", at = @At(value = "TAIL"))
 	private void replaceSoundEngine(ResourceManager resourceManager, GameOptions options, CallbackInfo ci) {
 		if (engine != null) {
 			engine.close();
 		}
 		this.engine = new Engine((SoundManager) (Object) this, options);
+	}
+
+	@Inject(method = "reload", at = @At("TAIL"))
+	private void reloadSubtitles(ResourceManager resourceManager, CallbackInfo ci) {
+		SubtitlesHud.getInstance().reload(resourceManager, GSON);
 	}
 }

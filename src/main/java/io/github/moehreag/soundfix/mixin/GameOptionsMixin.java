@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import io.github.moehreag.soundfix.SoundFix;
+import io.github.moehreag.soundfix.subtitles.SubtitlesHud;
 import net.minecraft.client.options.GameOptions;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,6 +24,8 @@ public class GameOptionsMixin {
 			}
 		} else if ("directionalAudio".equals(strings[0])) {
 			SoundFix.hrtfEnabled = "true".equals(strings[1]);
+		} else if ("showSubtitles".equals(strings[0])) {
+			SubtitlesHud.getInstance().showSubtitles = "true".equals(strings[1]);
 		}
 	}
 
@@ -34,5 +37,6 @@ public class GameOptionsMixin {
 			writer.println("soundDevice:\"\"");
 		}
 		writer.println("directionalAudio:" + SoundFix.hrtfEnabled);
+		writer.println("showSubtitles:" + SubtitlesHud.getInstance().showSubtitles);
 	}
 }
