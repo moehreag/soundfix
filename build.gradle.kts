@@ -41,6 +41,8 @@ dependencies {
 	}
 
     implementation("org.lwjgl:lwjgl-openal:3.3.5")
+
+    modLocalRuntime("com.terraformersmc:modmenu:0.3.1+mc1.8.9")
 }
 
 tasks.processResources {
