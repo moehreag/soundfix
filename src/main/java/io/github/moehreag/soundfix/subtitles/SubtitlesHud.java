@@ -6,7 +6,7 @@ import java.util.*;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.render.platform.GlStateManager;
 import io.github.moehreag.soundfix.SoundFix;
 import io.github.moehreag.soundfix.b3d_audio.ListenerTransform;
 import io.github.moehreag.soundfix.sounds.SoundEventListener;

@@ -7,6 +7,7 @@ import net.minecraft.client.sound.SoundCategory;
 import net.minecraft.client.sound.instance.SoundInstance;
 import net.minecraft.client.sound.system.SoundEngine;
 import net.minecraft.client.sound.system.SoundManager;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -71,18 +72,18 @@ public class Engine extends SoundEngine {
 	}
 
 	@Override
-	public void play(SoundInstance sound, int delay) {
+	public void playLater(SoundInstance sound, int delay) {
 		engine.playDelayed(sound, delay);
 	}
 
 	@Override
-	public void updateListener(PlayerEntity player, float tickDelta) {
+	public void update(PlayerEntity player, float tickDelta) {
 		if (player == null)  {
 			return;
 		}
-		var camera = Minecraft.getInstance().getCamera();
-		float pitch = camera.prevPitch + (camera.pitch - camera.prevPitch) * tickDelta;
-		float yaw = camera.prevYaw + (camera.yaw - camera.prevYaw) * tickDelta;
+		Entity camera = Minecraft.getInstance().getCamera();
+		float pitch = camera.lastPitch + (camera.pitch - camera.lastPitch) * tickDelta;
+		float yaw = camera.lastYaw + (camera.yaw - camera.lastYaw) * tickDelta;
 		double x = camera.prevX + (camera.x - camera.prevX) * (double) tickDelta;
 		double y = camera.prevY + (camera.y - camera.prevY) * (double) tickDelta + (double) camera.getEyeHeight();
 		double z = camera.prevZ + (camera.z - camera.prevZ) * (double) tickDelta;

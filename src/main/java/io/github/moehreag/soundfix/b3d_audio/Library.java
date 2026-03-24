@@ -16,6 +16,7 @@ import org.lwjgl.system.MemoryStack;
 @Environment(EnvType.CLIENT)
 public class Library {
 	static final Logger LOGGER = LogManager.getLogger("Library");
+	static final String NO_DEVICE_NAME = "(None)";
 	private static final int NO_DEVICE = 0;
 	private static final int DEFAULT_CHANNEL_COUNT = 30;
 	private long currentDevice;
@@ -23,6 +24,7 @@ public class Library {
 	private boolean supportsDisconnections;
 	@Nullable
 	private String defaultDeviceName;
+	private String currentDeviceName = NO_DEVICE_NAME;
 	private static final Library.ChannelPool EMPTY = new Library.ChannelPool() {
 		@Nullable
 		@Override
@@ -65,7 +67,9 @@ public class Library {
 	 * @throws IllegalStateException if an error occurs during initialization.
 	 */
 	public void init(@Nullable String deviceSpecifier, boolean enableHrtf) {
-		this.currentDevice = openDeviceOrFallback(deviceSpecifier);
+		currentDeviceName = NO_DEVICE_NAME;
+		this.currentDevice = openDeviceOrFallback(deviceSpecifier, getDefaultDeviceName());
+		currentDeviceName = queryDeviceName(this.currentDevice);
 		this.supportsDisconnections = false;
 		ALCCapabilities aLCCapabilities = ALC.createCapabilities(this.currentDevice);
 		if (OpenAlUtil.checkALCError(this.currentDevice, "Get capabilities")) {
@@ -99,7 +103,7 @@ public class Library {
 						throw new IllegalStateException("AL_EXT_LINEAR_DISTANCE is not supported");
 					} else {
 						OpenAlUtil.checkALError("Enable per-source distance models");
-						LOGGER.info("OpenAL initialized on device {}", new Object[]{this.getCurrentDeviceName()});
+						LOGGER.info("OpenAL initialized on device {}", new Object[]{this.currentDeviceName()});
 						this.supportsDisconnections = ALC10.alcIsExtensionPresent(this.currentDevice, "ALC_EXT_disconnect");
 					}
 				}
@@ -159,32 +163,10 @@ public class Library {
 	}
 
 	/**
-	 * {@return the name of the currently selected audio device, or {@code Unknown} if it cannot be determined}
-	 */
-	@Nullable
-	public static String getDefaultDeviceName() {
-		if (!ALC10.alcIsExtensionPresent(0L, "ALC_ENUMERATE_ALL_EXT")) {
-			return null;
-		} else {
-			ALUtil.getStringList(0L, 4115);
-			return ALC10.alcGetString(0L, 4114);
-		}
-	}
-
-	/**
 	 * {@return the name of the default audio device, or {@code null} if it cannot be determined}
 	 */
-	public String getCurrentDeviceName() {
-		String string = ALC10.alcGetString(this.currentDevice, 4115);
-		if (string == null) {
-			string = ALC10.alcGetString(this.currentDevice, 4101);
-		}
-
-		if (string == null) {
-			string = "Unknown";
-		}
-
-		return string;
+	public String currentDeviceName() {
+		return currentDeviceName;
 	}
 
 	/**
@@ -204,21 +186,36 @@ public class Library {
 		}
 	}
 
-	/**
-	 * Opens the specified audio device, or the default device if the specifier is null.
-	 *
-	 * @param deviceSpecifier The name of the audio device to open, or null to open the default device.
-	 * @return The handle of the opened device.
-	 * @throws IllegalStateException if the device cannot be opened.
-	 */
-	private static long openDeviceOrFallback(@Nullable String deviceSpecifier) {
+	public static String getDefaultDeviceName() {
+		if (!ALC10.alcIsExtensionPresent(0L, "ALC_ENUMERATE_ALL_EXT")) {
+			return null;
+		} else {
+			ALUtil.getStringList(0L, 4115);
+			return ALC10.alcGetString(0L, 4114);
+		}
+	}
+
+	private static String queryDeviceName(final long deviceId) {
+		String name = ALC10.alcGetString(deviceId, 4115);
+		if (name == null) {
+			name = ALC10.alcGetString(deviceId, 4101);
+		}
+
+		if (name == null) {
+			name = "Unknown (0x" + HexFormat.of().toHexDigits(deviceId) + ")";
+		}
+
+		return name;
+	}
+
+	private static long openDeviceOrFallback(@Nullable String preferredDevice, String systemDefault) {
 		OptionalLong optionalLong = OptionalLong.empty();
-		if (deviceSpecifier != null) {
-			optionalLong = tryOpenDevice(deviceSpecifier);
+		if (preferredDevice != null) {
+			optionalLong = tryOpenDevice(preferredDevice);
 		}
 
 		if (optionalLong.isEmpty()) {
-			optionalLong = tryOpenDevice(getDefaultDeviceName());
+			optionalLong = tryOpenDevice(systemDefault);
 		}
 
 		if (optionalLong.isEmpty()) {
@@ -271,7 +268,6 @@ public class Library {
 	 * Releases a channel.
 	 *
 	 * @param channel The channel to release.
-	 * @return whether the channel was successfully released
 	 */
 	public void releaseChannel(Channel channel) {
 		if (!this.staticChannels.release(channel) && !this.streamingChannels.release(channel)) {

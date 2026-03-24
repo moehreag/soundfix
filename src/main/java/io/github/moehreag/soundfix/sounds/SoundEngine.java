@@ -294,7 +294,7 @@ public class SoundEngine {
 								LOGGER.info("System default audio device has changed!");
 								this.devicePoolState.compareAndSet(SoundEngine.DeviceCheckState.ONGOING, SoundEngine.DeviceCheckState.CHANGE_DETECTED);
 							}
-						} else if (!this.library.getCurrentDeviceName().equals(string) && this.library.getAvailableSoundDevices().contains(string)) {
+						} else if (!this.library.currentDeviceName().equals(string) && this.library.getAvailableSoundDevices().contains(string)) {
 							LOGGER.info("Preferred audio device has become available!");
 							this.devicePoolState.compareAndSet(SoundEngine.DeviceCheckState.ONGOING, SoundEngine.DeviceCheckState.CHANGE_DETECTED);
 						}

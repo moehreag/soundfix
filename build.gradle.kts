@@ -1,7 +1,7 @@
 plugins {
 	id("maven-publish")
-	id("fabric-loom") version "1.10-SNAPSHOT"
-	id("ploceus") version "1.10-SNAPSHOT"
+	id("net.fabricmc.fabric-loom-remap") version "1.15.+"
+	id("ploceus") version "1.15.+"
     id("com.modrinth.minotaur") version "2.+"
 }
 
@@ -12,7 +12,11 @@ version = "${project.version}+mc${project.property("minecraft_version")}"
 group = project.property("maven_group")!!
 
 repositories {
-	maven ("https://moehreag.duckdns.org/maven/releases")
+	maven ("https://maven.axolotlclient.com/releases")
+}
+
+ploceus {
+    setIntermediaryGeneration(2)
 }
 
 dependencies {
@@ -23,26 +27,12 @@ dependencies {
 
 	ploceus.dependOsl(project.property("osl_version")!! as String)
 
-	modCompileOnly("io.github.moehreag:legacy-lwjgl3:${project.property("legacy_lwjgl3")}") {
-		exclude(group = "org.lwjgl", module = "lwjgl-glfw")
-		exclude(group = "org.lwjgl", module = "lwjgl-openal")
-		exclude(group = "org.lwjgl", module = "lwjgl-opengl")
-		exclude(group = "org.lwjgl", module = "lwjgl")
-		exclude(group = "net.fabricmc")
-		exclude(group = "org.javassist")
-	}
-	modLocalRuntime("io.github.moehreag:legacy-lwjgl3:${project.property("legacy_lwjgl3")}:all-remapped") {
-		exclude(group = "org.lwjgl", module = "lwjgl-glfw")
-		exclude(group = "org.lwjgl", module = "lwjgl-openal")
-		exclude(group = "org.lwjgl", module = "lwjgl-opengl")
-		exclude(group = "org.lwjgl", module = "lwjgl")
-		exclude(group = "net.fabricmc")
-		exclude(group = "org.javassist")
-	}
+	modImplementation("io.github.moehreag:legacy-lwjgl3:${project.property("legacy_lwjgl3")}")
+    //modLocalRuntime("com.terraformersmc:modmenu:0.3.1+mc1.8.9")
+}
 
-    implementation("org.lwjgl:lwjgl-openal:3.3.5")
-
-    modLocalRuntime("com.terraformersmc:modmenu:0.3.1+mc1.8.9")
+configurations.configureEach {
+    exclude("org.lwjgl.lwjgl")
 }
 
 tasks.processResources {
@@ -116,7 +106,7 @@ modrinth {
     versionType = "release"
     uploadFile = tasks.remapJar.get()
     gameVersions.set(listOf("${project.property("minecraft_version")}"))
-    loaders.set(listOf("fabric", "quilt"))
+    loaders.set(listOf("ornithe"))
     additionalFiles.set(listOf(tasks.remapSourcesJar))
     dependencies {
         required.project("osl")
